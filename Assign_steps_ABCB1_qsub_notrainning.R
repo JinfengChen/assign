@@ -69,20 +69,21 @@ kraswt_300_genelist<-output.data$processed.data$diffGeneList
 
 ##geting training data
 source("Key_ASSIGN_functions.Rmd")
-expr<-as.matrix(read.table("./Trainning_data/GFP18_AKT_BAD_HER2_IGF1R_RAF_ERK.tpmlog",sep='\t',row.names=1, header=1))
-control<-subset(expr, select=GFP.1:GFP.12)
+expr<-as.matrix(read.table("./Trainning_data/GSE83083_GFP18_AKT_BAD_HER2_IGF1R_RAF.tpmlog.txt",sep='\t',row.names=1, header=1))
+control<-subset(expr, select=GFP18.1:GFP18.12)
 her2<-subset(expr, select=HER2.1:HER2.6)
 akt<-subset(expr,select=AKT.1:AKT.6)
 bad<-subset(expr,select=BAD.1:BAD.6)
 igf1r<-subset(expr,select=IGF1R.1:IGF1R.6)
 raf<-subset(expr,select=RAF.1:RAF.6)
-erk<-subset(expr,select=ERK.1:ERK.6)
-expr_all<-cbind(control,akt,bad,her2,igf1r,raf, erk)
+#erk<-subset(expr,select=ERK.1:ERK.6)
+expr_all<-cbind(control,akt,bad,her2,igf1r,raf)
 dim(expr_all)
 #expr_all_f <-expr_all[apply(expr_all[,1:47]==0,1,mean) < 0.85,]
 control_egfr_l<-read.table("./Trainning_data/18_GFP_EGFR_TPMlog2.txt", sep='\t', header=1, row.names=1)
 gfp_egfr_multi_f <- merge_drop(expr_all, control_egfr_l)
 dim(gfp_egfr_multi_f)
+
 gfp_kras<-read.table("./Trainning_data/36_GFP_KRAS_TPMlog2.txt", sep='\t', header=1, row.names=1)
 #head(gfp_kras)
 gfp_egfr_kras_multi_f<-merge_drop(gfp_egfr_multi_f, gfp_kras)
@@ -91,48 +92,29 @@ dim(gfp_egfr_kras_multi_f)
 #dim(test)
 #expr_all_test_f<-merge_drop(gfp_egfr_multi_f,test,by=0)
 trainningData1 <- gfp_egfr_kras_multi_f
-trainningLabel1 <- list(control = list(AKT = 1:12, BAD = 1:12, HER2 = 1:12, IGF1R = 1:12, RAF = 1:12, ERK = 1:12, EGFR = 48:53, KRASWT = 60:68, KRASQH = 60:68, KRASGV = 60:68), AKT = 13:18, BAD = 19:24, HER2 = 25:29, IGF1R = 30:35, RAF = 36:41, ERK = 42:47, EGFR1 = 54:59, KRASWT = 69:77, KRASQH = 78:86, KRASGV = 87:95)
+trainningLabel1 <- list(control = list(AKT = 1:12, BAD = 1:12, HER2 = 1:12, IGF1R = 1:12, RAF = 1:12, EGFR = 42:47, KRASWT = 54:62, KRASQH = 54:62, KRASGV = 54:62),
+                        AKT = 13:18, BAD = 19:24, HER2 = 25:29, IGF1R = 30:35, RAF = 36:41, EGFR1 = 48:53, KRASWT = 63:71, KRASQH = 72:80, KRASGV = 81:89)
 
 ##read ABCB1 data
-level <- c("gene_id", "transcript_id.s.", "Gene.ID", "X1.uninf.ctrl.1", "X2.uninf.ctrl.2", "X3.uninf.ctrl.3", "X4.uninf.ctrl.4", "X5.GFP.5.1", "X6.GFP.5.2", "X7.GFP.5.3", "X8.GFP.5.4", "X9.GFP.50.1", "X10.GFP.50.2", "X11.GFP.50.3", "X12.GFP.50.4", "X13.ABCB1.5.1", "X14.ABCB1.5.2", "X15.ABCB1.5.3", "X16.ABCB1.5.4", "X17.ABCB1.50.1", "X18.ABCB1.50.2", "X19.ABCB1.50.3", "X20.ABCB1.50.4")
 x <- read.table("expression.gene.tpm", sep="\t", header=T)
-x <- x[,level]
 rownames(x) <- x[,1]
 x <- x[,4:ncol(x)]
 x[1:3,1:4]
-x_label <- c("uninf_ctrl","uninf_ctrl","uninf_ctrl","uninf_ctrl","GFP_5","GFP_5","GFP_5", "GFP_5","GFP_50","GFP_50","GFP_50","GFP_50","ABCB1_5","ABCB1_5","ABCB1_5","ABCB1_5","ABCB1_50","ABCB1_50","ABCB1_50","ABCB1_50")
+x_label <- c("uninf_ctrl", "GFP_50", "GFP_50", "GFP_50", "ABCB1_5", "ABCB1_5", "ABCB1_5", "ABCB1_5", "ABCB1_50", "ABCB1_50", "ABCB1_50", "uninf_ctrl", "ABCB1_50", "uninf_ctrl", "uninf_ctrl", "GFP_5", "GFP_5", "GFP_5", "GFP_5", "GFP_50")
 
 testData1  <- x
 testLabel1 <- x_label
 geneList1  <- list(AKT = akt_75_genelist[[1]], BAD = bad_200_genelist[[1]], IGF1R = igf1r_75_genelist[[1]], ERK = erk_250_genelist[[1]], HER2 = her2_15_genelist[[1]], EGFR = egfr_25_genelist[[1]], RAF = raf_100_genelist[[1]], KRASQH = krasqh_300_genelist[[1]], KRASGV = krasgv_300_genelist[[1]], KRASWT = kraswt_300_genelist[[1]])
 
-#pathwayList <- c("AKT", "BAD", "IGF1R", "ERK", "HER2", "EGFR", "RAF", "KRASQH", "KRASGV", "KRASWT
-#combat, batch correction
-library(sva)
-expr_all_test_f <- merge_drop(trainningData1, testData1, by=0)
-expr_all_test_f <- as.matrix(expr_all_test_f)
-expr_all_test_f <- expr_all_test_f[apply(expr_all_test_f[,1:115]==0,1,mean) < 0.85,] 
-#sub<-c(12,6,6,5,6,6,6,6,6,9,9,9,9,4,4,4,4,4)
-pdf(file=paste(tempdir, 'pcaPlots_prior_combat.pdf', sep='/'))
-#pcaplot(expr_all_test_f, sub)
-bat1  <- as.matrix(cbind(colnames(expr_all_test_f), c(rep(1,ncol(expr_all)), rep(2, ncol(control_egfr_l)), rep(3,ncol(gfp_kras)), rep(4,ncol(testData1)))))
-batch <- as.numeric(bat1[,2])
-pcaplot(expr_all_test_f, batch)
-dev.off()
-combat_expr1<-ComBat(dat=expr_all_test_f, batch=batch, mod=NULL, par.prior=FALSE, mean.only=TRUE)
-pdf(file=paste(tempdir, 'pcaPlots_after_combat.pdf', sep='/'))
-pcaplot(combat_expr1, batch)
-dev.off()
-trainningData1_combat <- combat_expr1[,1:95]
-testingData1_combat   <- combat_expr1[,96:115]
+#pathwayList <- c("AKT", "BAD", "IGF1R", "ERK", "HER2", "EGFR", "RAF", "KRASQH", "KRASGV", "KRASWT")
 
 if ( TRUE ){
 # training dataset is available;
 # the gene list of pathway signature is available
-processed.data <- assign.preprocess(trainingData=trainningData1_combat,
-                                    testData=testingData1_combat,
-                                    trainingLabel=trainningLabel1,
-                                    geneList=geneList1, n_sigGene=rep(200, 10))
+processed.data <- assign.preprocess(trainingData=NULL,
+                                    testData=testData1,
+                                    trainingLabel=NULL,
+                                    geneList=geneList1[pathway])
 
 mcmc.chain <- assign.mcmc(Y=processed.data$testData_sub,
                           Bg = processed.data$B_vector,
@@ -151,11 +133,11 @@ mcmc.pos.mean <- assign.summary(test=mcmc.chain, burn_in=1000,
 
 assign.output(processed.data=processed.data,
               mcmc.pos.mean.testData=mcmc.pos.mean,
-              trainingData=trainningData1_combat, testData=testingData1_combat,
-              trainingLabel=trainningLabel1,
-              testLabel=testLabel1, geneList=geneList1,
+              trainingData=NULL, testData=testData1,
+              trainingLabel=NULL,
+              testLabel=testLabel1, geneList=geneList1[pathway],
               adaptive_B=TRUE, adaptive_S=FALSE,
-              mixture_beta=TRUE, outputDir=tempdir)
+              mixture_beta=TRUE, outputDir=pathwayList[pathway])
 
 }
 
