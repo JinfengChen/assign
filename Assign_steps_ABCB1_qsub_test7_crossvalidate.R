@@ -104,13 +104,11 @@ x <- x[,4:ncol(x)]
 x[1:3,1:4]
 x_label <- c("uninf_ctrl","uninf_ctrl","uninf_ctrl","uninf_ctrl","GFP_5","GFP_5","GFP_5", "GFP_5","GFP_50","GFP_50","GFP_50","GFP_50","ABCB1_5","ABCB1_5","ABCB1_5","ABCB1_5","ABCB1_50","ABCB1_50","ABCB1_50","ABCB1_50")
 
-#testData1  <- gfp_kras
-#testLabel1 <- c("GFP", "GFP","GFP","GFP","GFP","GFP","GFP","GFP","GFP", "KRASWT", "KRASWT","KRASWT","KRASWT","KRASWT","KRASWT","KRASWT","KRASWT","KRASWT","KRASQH", "KRASQH","KRASQH","KRASQH","KRASQH","KRASQH","KRASQH","KRASQH","KRASQH","KRASGV","KRASGV","KRASGV","KRASGV","KRASGV","KRASGV","KRASGV","KRASGV","KRASGV")
 testData1  <- x
 testLabel1 <- x_label
 geneList1  <- list(AKT = akt_75_genelist[[1]], BAD = bad_200_genelist[[1]], IGF1R = igf1r_75_genelist[[1]], ERK = erk_250_genelist[[1]], HER2 = her2_15_genelist[[1]], EGFR = egfr_25_genelist[[1]], RAF = raf_100_genelist[[1]], KRASQH = krasqh_300_genelist[[1]], KRASGV = krasgv_300_genelist[[1]], KRASWT = kraswt_300_genelist[[1]])
 
-if (FALSE){
+#if (TRUE){
 #pathwayList <- c("AKT", "BAD", "IGF1R", "ERK", "HER2", "EGFR", "RAF", "KRASQH", "KRASGV", "KRASWT
 #combat, batch correction
 library(sva)
@@ -180,25 +178,25 @@ print("trainingData1......")
 dim(trainingData1_combat)
 print("testData1......")
 dim(testingData1_combat)
-}#end of if
+#}
 
-trainingData1_combat <- trainingData1
-testingData1_combat   <- testData1
+#trainingData1_combat <- trainingData1
+#testingData1_combat   <- testData1
 
-#if ( FALSE ){
+if ( TRUE ){
 # training dataset is available;
 # the gene list of pathway signature is available
-processed.data <- assign.preprocess(trainingData=NULL,
+processed.data <- assign.preprocess(trainingData=trainingData1_combat,
                                     testData=testingData1_combat,
-                                    trainingLabel=NULL,
-                                    geneList=geneList1)
+                                    trainingLabel=trainingLabel1,
+                                    geneList=geneList1, n_sigGene=rep(200, 10))
 
 mcmc.chain <- assign.mcmc(Y=processed.data$testData_sub,
                           Bg = processed.data$B_vector,
                           X=processed.data$S_matrix,
                           Delta_prior_p = processed.data$Pi_matrix,
                           iter = 2000, adaptive_B=TRUE,
-                          adaptive_S=TRUE, mixture_beta=TRUE)
+                          adaptive_S=FALSE, mixture_beta=TRUE)
 
 trace.plot <- assign.convergence(test=mcmc.chain, burn_in=0, iter=2000,
                                  parameter="B", whichGene=1,
@@ -206,38 +204,38 @@ trace.plot <- assign.convergence(test=mcmc.chain, burn_in=0, iter=2000,
 
 mcmc.pos.mean <- assign.summary(test=mcmc.chain, burn_in=1000,
                                 iter=2000, adaptive_B=TRUE,
-                                adaptive_S=TRUE, mixture_beta=TRUE)
+                                adaptive_S=FALSE, mixture_beta=TRUE)
 
 assign.output(processed.data=processed.data,
               mcmc.pos.mean.testData=mcmc.pos.mean,
-              trainingData=NULL, testData=testingData1_combat,
-              trainingLabel=NULL,
+              trainingData=trainingData1_combat, testData=testingData1_combat,
+              trainingLabel=trainingLabel1,
               testLabel=testLabel1, geneList=geneList1,
-              adaptive_B=TRUE, adaptive_S=TRUE,
+              adaptive_B=TRUE, adaptive_S=FALSE,
               mixture_beta=TRUE, outputDir=tempdir)
 
 #cross validate
-#mcmc.chain <- assign.mcmc(Y=processed.data$trainingData_sub,
-#                          Bg = processed.data$B_vector,
-#                          X=processed.data$S_matrix,
-#                          Delta_prior_p = processed.data$Pi_matrix,
-#                          iter = 2000, adaptive_B=TRUE,
-#                          adaptive_S=FALSE, mixture_beta=TRUE)
+mcmc.chain <- assign.mcmc(Y=processed.data$trainingData_sub,
+                          Bg = processed.data$B_vector,
+                          X=processed.data$S_matrix,
+                          Delta_prior_p = processed.data$Pi_matrix,
+                          iter = 2000, adaptive_B=TRUE,
+                          adaptive_S=FALSE, mixture_beta=TRUE)
 
-#trace.plot <- assign.convergence(test=mcmc.chain, burn_in=0, iter=2000,
-#                                 parameter="B", whichGene=1,
-#                                 whichSample=NA, whichPath=NA)
+trace.plot <- assign.convergence(test=mcmc.chain, burn_in=0, iter=2000,
+                                 parameter="B", whichGene=1,
+                                 whichSample=NA, whichPath=NA)
 
-#mcmc.pos.mean <- assign.summary(test=mcmc.chain, burn_in=1000,
-#                                iter=2000, adaptive_B=TRUE,
-#                                adaptive_S=FALSE, mixture_beta=TRUE)
+mcmc.pos.mean <- assign.summary(test=mcmc.chain, burn_in=1000,
+                                iter=2000, adaptive_B=TRUE,
+                                adaptive_S=FALSE, mixture_beta=TRUE)
 
-#assign.cv.output(processed.data=processed.data,
-#                 mcmc.pos.mean.trainingData=mcmc.pos.mean,
-#                 trainingData=trainingData1_combat,
-#                 trainingLabel=trainingLabel1, adaptive_B=TRUE,
-#                 adaptive_S=FALSE, mixture_beta=TRUE,
-#                 outputDir=tempdir)
+assign.cv.output(processed.data=processed.data,
+                 mcmc.pos.mean.trainingData=mcmc.pos.mean,
+                 trainingData=trainingData1_combat,
+                 trainingLabel=trainingLabel1, adaptive_B=TRUE,
+                 adaptive_S=FALSE, mixture_beta=TRUE,
+                 outputDir=tempdir)
 
-#}# end of if
+}
 
